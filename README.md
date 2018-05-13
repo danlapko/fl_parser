@@ -7,6 +7,6 @@ sudo ./install.sh
 main.py will read L-program file and produce dot file in "./out" folder.
 Example:
 ```
-python main.py ./tests/correct/prog.l
+python3 main.py ./tests/correct/prog.l
 ```
 
