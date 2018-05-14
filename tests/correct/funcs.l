@@ -1,5 +1,3 @@
-func(x,y) begin
-    method(x,y)
-end
-func(a*  2,b)
+f(x,t) begin g (y, z) end
 
+f(1,y)

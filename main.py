@@ -1,7 +1,8 @@
 import argparse
 import sys
 import os
-from antlr4 import tree, FileStream, CommonTokenStream, ParseTreeWalker, error
+from antlr4 import tree, FileStream, CommonTokenStream, ParseTreeWalker, error, Token
+from antlr4.TokenStreamRewriter import TokenStreamRewriter
 
 from src.LLexer import LLexer
 from src.LParser import LParser
@@ -38,11 +39,14 @@ class DotTreeListener(LParserListener):
 
         self.adjacency[ctx.dot_name] = list()
         if ctx.parentCtx:
+            # if tree.Trees.Trees.getNodeText(ctx.parentCtx, recog=ctx.parser) == "plus_assign":
+            # self.adjacency[]
             self.adjacency[ctx.parentCtx.dot_name].append(ctx.dot_name)
 
         rule_name = tree.Trees.Trees.getNodeText(ctx, recog=ctx.parser)
+
         cls = ctx.__class__.__name__
-        rule_name = '{} ({})'.format(rule_name, cls[:-len('Context')])
+        rule_name = f"{rule_name} ({cls[:-len('Context')]})"
 
         start_idx = ctx.start.start
         stop_idx = ctx.stop.stop
@@ -52,13 +56,13 @@ class DotTreeListener(LParserListener):
         st_line, st_col = ctx.start.line - 1, ctx.start.column
         end_line, end_col = ctx.stop.line - 1, ctx.stop.column
 
-        node_label = '{} [({}:{}), ({}:{})]'.format(rule_name, st_line, st_col, end_line, end_col)
+        node_label = f'{rule_name} [({st_line}:{st_col}), ({end_line}:{end_col})]'
         node_label += '\\n{}'.format(original_program_text.replace('\r', '\\n')
                                      .replace('\n', '\n')
                                      .replace('\\', '\\\\')
                                      .replace('"', '\\"'))
 
-        self.vert_labling[ctx.dot_name] = '{} [ label = "{}" ]; \n'.format(ctx.dot_name, node_label)
+        self.vert_labling[ctx.dot_name] = f'{ctx.dot_name} [ label = "{node_label}" ]; \n'
 
     def write_to_dotfile(self, filename):
         with open(filename, 'w') as f:
@@ -74,7 +78,7 @@ class DotTreeListener(LParserListener):
 
 if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
-    argparser.add_argument('input_file', help='L-language file')
+    argparser.add_argument('--input_file', help='L-language file', default="./tests/correct/sugar.l", type=str)
     args = argparser.parse_args()
     instream = FileStream(args.input_file)
 
@@ -83,6 +87,7 @@ if __name__ == '__main__':
     l_lexer.addErrorListener(ExitErrorListener())
 
     com_token_stream = CommonTokenStream(l_lexer)
+
     l_parser = LParser(com_token_stream)
     l_parser.removeErrorListeners()
     l_parser.addErrorListener(ExitErrorListener())
