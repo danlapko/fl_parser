@@ -1,7 +1,9 @@
 import argparse
 import sys
 import os
-from antlr4 import tree, FileStream, CommonTokenStream, ParseTreeWalker, error, Token
+from io import StringIO
+import re
+from antlr4 import tree, FileStream, InputStream, CommonTokenStream, ParseTreeWalker, error, Token
 from antlr4.TokenStreamRewriter import TokenStreamRewriter
 
 from src.LLexer import LLexer
@@ -80,7 +82,21 @@ if __name__ == '__main__':
     argparser = argparse.ArgumentParser()
     argparser.add_argument('--input_file', help='L-language file', default="./tests/correct/sugar.l", type=str)
     args = argparser.parse_args()
-    instream = FileStream(args.input_file)
+
+    # =================================================
+    with open(args.input_file,"r") as f:
+        string1 = f.read()
+        pattern1 = "(\w)(\s*)(:\+=)"
+        result1 = re.sub(pattern1, r"\1\2 := \1 + ", string1)
+
+        pattern2 = "(\w)(\s*)(:\-=)"
+        result2 = re.sub(pattern2, r"\1\2 := \1 - ", result1)
+
+        instream = InputStream(result2)
+        # print(result2)
+
+    # =================================================
+    # instream = FileStream(args.input_file)
 
     l_lexer = LLexer(instream)
     l_lexer.removeErrorListeners()
@@ -92,6 +108,35 @@ if __name__ == '__main__':
     l_parser.removeErrorListeners()
     l_parser.addErrorListener(ExitErrorListener())
 
+    # =================================================
+
+    # rewriter = TokenStreamRewriter(com_token_stream)
+    # l_parser.program()
+    # for i in range(len(com_token_stream.tokens)):
+    #     token = com_token_stream.get(i)
+    #     if token.type == LParser.PLUS_ASSIGN:
+    #         identifier = com_token_stream.get(i - 1)
+    #         # rewriter.insertBeforeIndex(i,"OOO")
+    #         rewriter.insertAfter(i, identifier.text + "+")
+    #         rewriter.replaceIndex(i, ":=")
+    #
+    #
+    # class Interval:
+    #     start = 0; stop = 75
+    #
+    #
+    # interval = Interval()
+    # # print(rewriter.getProgram("default"))
+    # updated_text = rewriter.getText("default", interval)
+    # print(updated_text)
+    # l_lexer = LLexer(InputStream(updated_text))
+    # com_token_stream = CommonTokenStream(l_lexer)
+    # l_parser = LParser(com_token_stream)
+    # l_parser.removeErrorListeners()
+    # l_parser.addErrorListener(ExitErrorListener())
+    # # l_lexer.reset()
+    # # print(com_token_stream.getText())
+    # =================================================
     parse_tree = l_parser.program()
 
     walker = ParseTreeWalker()
