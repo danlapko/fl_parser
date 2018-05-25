@@ -48,7 +48,7 @@ class DotTreeListener(LParserListener):
         rule_name = tree.Trees.Trees.getNodeText(ctx, recog=ctx.parser)
 
         cls = ctx.__class__.__name__
-        rule_name = f"{rule_name} ({cls[:-len('Context')]})"
+        rule_name = "{} ({})".format(rule_name, cls[:-len('Context')])
 
         start_idx = ctx.start.start
         stop_idx = ctx.stop.stop
@@ -58,13 +58,14 @@ class DotTreeListener(LParserListener):
         st_line, st_col = ctx.start.line - 1, ctx.start.column
         end_line, end_col = ctx.stop.line - 1, ctx.stop.column
 
-        node_label = f'{rule_name} [({st_line}:{st_col}), ({end_line}:{end_col})]'
+        node_label = '{} [({}:{}), ({}:{})]'.format(rule_name, st_line, st_col,
+                                                    end_line, end_col)
         node_label += '\\n{}'.format(original_program_text.replace('\r', '\\n')
                                      .replace('\n', '\n')
                                      .replace('\\', '\\\\')
                                      .replace('"', '\\"'))
 
-        self.vert_labling[ctx.dot_name] = f'{ctx.dot_name} [ label = "{node_label}" ]; \n'
+        self.vert_labling[ctx.dot_name] = '{} [ label = "{}" ]; \n'.format(ctx.dot_name, node_label)
 
     def write_to_dotfile(self, filename):
         with open(filename, 'w') as f:
@@ -84,7 +85,7 @@ if __name__ == '__main__':
     args = argparser.parse_args()
 
     # =================================================
-    with open(args.input_file,"r") as f:
+    with open(args.input_file, "r") as f:
         string1 = f.read()
         pattern1 = "(\w)(\s*)(:\+=)"
         result1 = re.sub(pattern1, r"\1\2 := \1 + ", string1)
